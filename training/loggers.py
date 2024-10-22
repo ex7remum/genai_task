@@ -1,0 +1,83 @@
+import wandb
+import torch
+from PIL import Image
+from collections import defaultdict
+from statistics import mean
+import torchvision
+import numpy as np
+import os
+
+class WandbLogger:
+    def __init__(self, config):
+        wandb.login(key=os.environ['WANDB_KEY'].strip())
+        if config.train.checkpoint_path:
+            # TO DO
+            # resume training run from checkpoint
+            raise NotImplementedError()
+        else:
+            # create new wandb run and save args, config and etc.
+            self.wandb_args = {
+                "id": wandb.util.generate_id(),
+                "project": config.exp.project_name,
+                "name": config.exp.run_name,
+                "config": config,
+            }
+
+        wandb.init(**self.wandb_args, resume="allow")
+
+
+    @staticmethod
+    def log_values(values_dict: dict, step: int):
+        # log values to wandb
+        for key, value in values_dict.items():
+            wandb.log({key : value}, step=step)
+
+    @staticmethod
+    def log_images(images: torch.Tensor, step: int):
+        # log images
+        nrow = 4
+        var = images.cpu().detach().numpy()
+        var = (var + 1) / 2
+        var[var < 0] = 0
+        var[var > 1] = 1
+        var = var * 255
+        grid = torchvision.utils.make_grid(images, nrow=nrow).permute(1, 2, 0)
+        grid = grid.data.numpy().astype(np.uint8)
+        wandb.log({'gen_image': wandb.Image(grid)}, step=step)
+
+
+class TrainingLogger:
+    def __init__(self, config):
+        self.logger = WandbLogger(config)
+        self.losses_memory = defaultdict(list)
+
+
+    def log_train_losses(self, step: int):
+        # average losses in losses_memory
+        # log them and clear losses_memory
+        res_dict = {}
+        for loss_name, loss_vals in self.losses_memory.items():
+            avg_train_loss = mean(loss_vals)
+            res_dict[loss_name] = avg_train_loss
+        self.losses_memory.clear()
+        self.logger.log_values(res_dict, step)
+
+
+    def log_val_metrics(self, val_metrics: dict, step: int):
+        self.logger.log_values(val_metrics, step)
+
+
+    def log_batch_of_images(self, batch: torch.Tensor, step: int, images_type: str = ""):
+        self.logger.log_images(batch, step)
+
+
+    def update_losses(self, losses_dict):
+        # it is useful to average losses over a number of steps rather than track them at each step
+        # this makes training curves smoother
+        for loss_name, loss_val in losses_dict.items():
+            self.losses_memory[loss_name].append(loss_val)
+
+
+
+
+
