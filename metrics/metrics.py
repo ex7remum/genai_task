@@ -13,7 +13,6 @@ class FID:
             fid = os.popen(f'python3 -m pytorch_fid {orig_path} {synt_path} --device cuda:0').read()
         else:
             fid = os.popen(f'python3 -m pytorch_fid {orig_path} {synt_path}').read()
-        print(float(fid.split()[1]))
         return float(fid.split()[1])
     
     def get_name(self):
