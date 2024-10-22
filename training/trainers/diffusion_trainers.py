@@ -18,8 +18,8 @@ diffusion_trainers_registry = ClassRegistry()
 class BaseDiffusionTrainer(BaseTrainer):
     def setup_models(self):
         # do not forget to load state from checkpoints if provided
-        self.unet = diffusion_models_registry[self.config.train.model](self.config.model_args)
-        self.noise_scheduler = noise_scheduler_registry[self.config.train.noise_scheduler](self.config.ddpm_args)
+        self.unet = diffusion_models_registry[self.config.train.model](self.config.model_args).to(self.device)
+        self.noise_scheduler = noise_scheduler_registry[self.config.train.noise_scheduler](self.config.ddpm_args).to(self.device)
 
 
     def setup_optimizers(self):

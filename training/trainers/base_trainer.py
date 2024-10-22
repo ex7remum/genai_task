@@ -98,9 +98,9 @@ class BaseTrainer:
 
 
     def training_loop(self):
-        self.to_train()
 
         for self.step in range(self.start_step, self.config.train.steps + 1):
+            self.to_train()
             losses_dict = self.train_step()
             self.logger.update_losses(losses_dict)
 

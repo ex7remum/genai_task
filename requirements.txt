@@ -6,3 +6,4 @@ omegaconf==2.1.2
 tqdm
 pandas
 wandb
+pytorch-fid

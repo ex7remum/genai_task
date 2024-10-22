@@ -41,7 +41,7 @@ class WandbLogger:
         var[var < 0] = 0
         var[var > 1] = 1
         var = var * 255
-        grid = torchvision.utils.make_grid(images, nrow=nrow).permute(1, 2, 0)
+        grid = torchvision.utils.make_grid(var, nrow=nrow).permute(1, 2, 0)
         grid = grid.data.numpy().astype(np.uint8)
         wandb.log({'gen_image': wandb.Image(grid)}, step=step)
 

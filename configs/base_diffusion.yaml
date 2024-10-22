@@ -1,0 +1,52 @@
+exp:
+    project_name: base_diffusion
+    run_name: base_run
+    exp_dir: experiments
+    device: cpu
+    seed: 54
+    use_wandb: True
+    model_type: diffusion
+
+data:
+    input_train_dir: train
+    input_val_dir: test
+    drop_last: true
+    shuffle: true
+    train_batch_size: 64
+    val_batch_size: 64
+    workers: 2
+
+train:
+    trainer: base_diffusion_trainer
+    model: base_diffusion
+    dataset_name: base_dataset
+    noise_scheduler: ddpm
+    optimizer: adam
+    checkpoint_path: null
+    val_metrics: ["fid"]
+    start_step: 0
+    steps: 300000
+    log_step: 500
+    checkpoint_step: 15000
+    val_step: 15000
+
+
+model_args:
+    num_steps: 1000
+    hidden_dim: 3
+    blocks_num: 3
+
+
+ddpm_args:
+    num_timesteps: 1000
+    beta_min: 1e-4
+    beta_max: 2e-2
+
+
+optimizer_args:
+    lr: 0.0003
+
+losses:
+    mse: 1.0
+
+

@@ -8,43 +8,52 @@ exp:
     model_type: diffusion
 
 data:
-    input_train_dir: food_data/train
-    input_val_dir: food_data/test
+    input_train_dir: train
+    input_val_dir: test
     drop_last: true
     shuffle: true
-    train_batch_size: 32
-    val_batch_size: 32
+    train_batch_size: 64
+    val_batch_size: 64
     workers: 2
 
 train:
     trainer: base_diffusion_trainer
-    model: base_diffusion
+    model: DhariwalUnet
     dataset_name: base_dataset
     noise_scheduler: ddpm
     optimizer: adam
     checkpoint_path: null
     val_metrics: ["fid"]
     start_step: 0
-    steps: 10
-    log_step: 5
-    checkpoint_step: 5
-    val_step: 5
+    steps: 300000
+    log_step: 500
+    checkpoint_step: 15000
+    val_step: 15000
 
 
 model_args:
-    hidden_dim: 3
-    blocks_num: 2
-    num_steps: 100
+    img_resolution: 64
+    in_channels: 3
+    out_channels: 3
+    label_dim: 0
+    augment_dim: 0
+    model_channels: 16
+    channel_mult: [1,2,3,4]
+    channel_mult_emb: 4
+    num_blocks: 3
+    attn_resolutions: [32,16,8]
+    dropout: 0.10
+    label_dropout: 0
 
 
 ddpm_args:
-    num_timesteps: 100
+    num_timesteps: 1000
     beta_min: 1e-4
     beta_max: 2e-2
 
 
 optimizer_args:
-    lr: 0.0001
+    lr: 0.0003
 
 losses:
     mse: 1.0
