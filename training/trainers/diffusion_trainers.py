@@ -117,13 +117,13 @@ class BaseDiffusionTrainer(BaseTrainer):
         os.makedirs(path, mode=0o777, exist_ok=True)
 
 
-        for idx in range(0, num_images, self.config.data.val_batch_size):
-            num_img_to_gen = min(self.config.data.val_batch_size, num_images - idx)
-            gen_imgs = self.sample_image(num_img_to_gen)
-            for img_id, img in enumerate(gen_imgs):
-                cur_path = f'{path}/sample_{idx + img_id}.jpg'
-                cur_img = tensor2im(img)
-                cur_img = cur_img.save(cur_path)
+        #for idx in range(0, num_images, self.config.data.val_batch_size):
+        #    num_img_to_gen = min(self.config.data.val_batch_size, num_images - idx)
+        #    gen_imgs = self.sample_image(num_img_to_gen)
+        #    for img_id, img in enumerate(gen_imgs):
+        #        cur_path = f'{path}/sample_{idx + img_id}.jpg'
+        #        cur_img = tensor2im(img)
+        #        cur_img = cur_img.save(cur_path)
 
         visualize_img = self.sample_image(16)
         return visualize_img, path
