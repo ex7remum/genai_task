@@ -11,7 +11,6 @@ from omegaconf import OmegaConf
 
 class WandbLogger:
     def __init__(self, config):
-        print(type(config))
         wandb.login(key=os.environ['WANDB_KEY'].strip())
         if config.train.checkpoint_path:
             # TO DO

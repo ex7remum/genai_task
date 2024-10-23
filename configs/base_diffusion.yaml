@@ -1,8 +1,8 @@
 exp:
     project_name: base_diffusion
-    run_name: base_run
+    run_name: simple_unet
     exp_dir: experiments
-    device: cpu
+    device: cuda
     seed: 54
     use_wandb: True
     model_type: diffusion
@@ -12,8 +12,8 @@ data:
     input_val_dir: test
     drop_last: true
     shuffle: true
-    train_batch_size: 64
-    val_batch_size: 64
+    train_batch_size: 128
+    val_batch_size: 512
     workers: 2
 
 train:
@@ -25,16 +25,16 @@ train:
     checkpoint_path: null
     val_metrics: ["fid"]
     start_step: 0
-    steps: 300000
+    steps: 30000
     log_step: 500
     checkpoint_step: 15000
     val_step: 15000
 
 
 model_args:
-    num_steps: 1000
-    hidden_dim: 3
-    blocks_num: 3
+    in_channels: 3
+    out_channels: 3
+    hidden_size: 512
 
 
 ddpm_args:
@@ -44,7 +44,7 @@ ddpm_args:
 
 
 optimizer_args:
-    lr: 0.0003
+    lr: 0.0002
 
 losses:
     mse: 1.0

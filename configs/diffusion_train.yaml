@@ -1,6 +1,6 @@
 exp:
     project_name: base_diffusion
-    run_name: base_run
+    run_name: dhariwal_unet
     exp_dir: experiments
     device: cuda
     seed: 54

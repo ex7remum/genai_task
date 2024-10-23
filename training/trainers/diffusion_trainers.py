@@ -61,10 +61,18 @@ class BaseDiffusionTrainer(BaseTrainer):
         self.optimizer.zero_grad()
 
         ddpm_out = self.noise_scheduler(batch)
-        pred_noise = self.unet(ddpm_out['x_t'], batch['t'])
+        pred_noise = self.unet(ddpm_out['x_t'], batch['t'] / self.noise_scheduler.T)
 
         batch_data = {"real_noise": ddpm_out['eps'],
                       "predicted_noise": pred_noise}
+        
+        log_dict = {
+            'max_real_eps' : real_noise.max(),
+            'min_real_eps' : real_noise.min(),
+            'max_pred_eps' : pred_noise.max(),
+            'min_pred_eps' : pred_noise.min() 
+        }
+        self.logger.logger.log_values(log_dict, self.step)
         batch_data = move_batch_to_device(batch_data, self.device)
 
         loss, losses_dict = self.loss_builder.calculate_loss(batch_data)
@@ -94,7 +102,7 @@ class BaseDiffusionTrainer(BaseTrainer):
 
         for t in range(self.noise_scheduler.T - 1, -1, -1):
             t_tensor = torch.ones(batch_size, dtype=torch.int64, device=x_t.device) * t
-            model_output = self.unet(x_t, t_tensor)
+            model_output = self.unet(x_t, t_tensor / self.noise_scheduler.T)
             x_0 = self.noise_scheduler.get_x_zero(x_t, model_output, t_tensor)
             x_t = self.noise_scheduler.sample_from_posterior_q(x_t, x_0, t_tensor)
         return x_t
