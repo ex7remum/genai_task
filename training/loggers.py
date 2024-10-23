@@ -6,9 +6,12 @@ from statistics import mean
 import torchvision
 import numpy as np
 import os
+from omegaconf import OmegaConf
+
 
 class WandbLogger:
     def __init__(self, config):
+        print(type(config))
         wandb.login(key=os.environ['WANDB_KEY'].strip())
         if config.train.checkpoint_path:
             # TO DO
@@ -20,9 +23,8 @@ class WandbLogger:
                 "id": wandb.util.generate_id(),
                 "project": config.exp.project_name,
                 "name": config.exp.run_name,
-                "config": config,
+                "config": OmegaConf.to_container(config),
             }
-
         wandb.init(**self.wandb_args, resume="allow")
 
 
@@ -76,8 +78,3 @@ class TrainingLogger:
         # this makes training curves smoother
         for loss_name, loss_val in losses_dict.items():
             self.losses_memory[loss_name].append(loss_val)
-
-
-
-
-
