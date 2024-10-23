@@ -37,11 +37,9 @@ class WandbLogger:
     def log_images(images: torch.Tensor, step: int):
         # log images
         nrow = 4
-        var = images.cpu().detach().numpy()
-        var = (var + 1) / 2
-        var[var < 0] = 0
-        var[var > 1] = 1
-        var = var * 255
+        var = images.cpu().detach()
+        var = (var + 1) * 127.5
+        var = torch.clip(var, 0, 255)
         grid = torchvision.utils.make_grid(var, nrow=nrow).permute(1, 2, 0)
         grid = grid.data.numpy().astype(np.uint8)
         wandb.log({'gen_image': wandb.Image(grid)}, step=step)
