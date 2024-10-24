@@ -5,6 +5,7 @@ from torch.nn import functional as F
 from utils.class_registry import ClassRegistry
 from torch.nn.functional import silu
 import numpy as np
+from denoising_diffusion_pytorch import Unet
 
 
 diffusion_models_registry = ClassRegistry()
@@ -418,3 +419,19 @@ class DhariwalUNet(torch.nn.Module):
             x = block(x, emb)
         x = self.out_conv(silu(self.out_norm(x)))
         return x
+
+
+@diffusion_models_registry.add_to_registry(name="TorchUnet")
+class PytorchUnet(nn.Module):
+    def __init__(self, model_config):
+        super().__init__()
+        
+        self.net = Unet(
+            dim=model_config['dim'],
+            dim_mults=model_config['dim_mults'],
+            channels=model_config['channels'],
+            flash_attn=model_config['flash_attn']
+        )
+        
+    def forward(self, x_t, t):
+        return self.net(x_t, t)

@@ -1,0 +1,51 @@
+exp:
+    project_name: base_diffusion
+    run_name: torch_unet
+    exp_dir: experiments
+    device: cuda
+    seed: 54
+    use_wandb: True
+    model_type: diffusion
+
+data:
+    input_train_dir: train
+    input_val_dir: test
+    drop_last: true
+    shuffle: true
+    train_batch_size: 128
+    val_batch_size: 512
+    workers: 2
+
+train:
+    trainer: base_diffusion_trainer
+    model: TorchUnet
+    dataset_name: base_dataset
+    noise_scheduler: ddpm
+    optimizer: adam
+    checkpoint_path: null
+    val_metrics: ["fid"]
+    start_step: 0
+    steps: 30000
+    log_step: 100
+    checkpoint_step: 1500
+    val_step: 1500
+
+
+model_args:
+    dim: 64
+    dim_mults: [1, 2, 4, 4]
+    flash_attn: False
+    channels: 3
+
+
+ddpm_args:
+    num_timesteps: 1000
+    beta_min: 1e-4
+    beta_max: 2e-2
+
+
+optimizer_args:
+    lr: 0.0002
+
+losses:
+    mse: 1.0
