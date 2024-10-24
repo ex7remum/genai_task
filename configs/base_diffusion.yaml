@@ -24,6 +24,7 @@ train:
     optimizer: adam
     checkpoint_path: null
     val_metrics: ["fid"]
+    uncond_prob: 0.1
     start_step: 0
     steps: 30000
     log_step: 500

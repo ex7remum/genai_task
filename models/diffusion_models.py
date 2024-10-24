@@ -430,7 +430,8 @@ class PytorchUnet(nn.Module):
             dim=model_config['dim'],
             dim_mults=model_config['dim_mults'],
             channels=model_config['channels'],
-            flash_attn=model_config['flash_attn']
+            flash_attn=model_config['flash_attn'],
+            self_condition=model_config['self_condition']
         )
         
     def forward(self, x_t, t):

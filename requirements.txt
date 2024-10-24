@@ -8,3 +8,4 @@ pandas
 wandb
 pytorch-fid
 denoising_diffusion_pytorch
+opencv-python

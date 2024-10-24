@@ -10,18 +10,24 @@ datasets_registry = ClassRegistry()
 @datasets_registry.add_to_registry(name="base_dataset")
 class BaseDataset(Dataset):
     def __init__(self, root, transforms=None):
-        self.paths = make_dataset(root)
+        self.paths, self.labels = make_dataset(root)
         self.transforms = transforms
+        self.classes = max(self.labels) + 1
 
     def __getitem__(self, ind):
         path = self.paths[ind]
         image = Image.open(path).convert("RGB")
+        label = self.labels[ind]
 
         if self.transforms:
             image = self.transforms(image)
 
-        return {"images": image}
+        return {"images": image,
+                "labels": label}
 
     def __len__(self):
         return len(self.paths)
+    
+    def get_num_classes(self):
+        return self.classes
 

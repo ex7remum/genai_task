@@ -8,7 +8,7 @@ from training.optimizers import optimizers_registry
 from training.losses.diffusion_losses import DiffusionLossBuilder
 import torch
 import os
-
+import numpy as np
 
 
 diffusion_trainers_registry = ClassRegistry()
@@ -20,6 +20,7 @@ class BaseDiffusionTrainer(BaseTrainer):
         # do not forget to load state from checkpoints if provided
         self.unet = diffusion_models_registry[self.config.train.model](self.config.model_args).to(self.device)
         self.noise_scheduler = noise_scheduler_registry[self.config.train.noise_scheduler](self.config.ddpm_args).to(self.device)
+        self.uncond_prob = self.config.train.uncond_prob
 
 
     def setup_optimizers(self):
@@ -50,18 +51,27 @@ class BaseDiffusionTrainer(BaseTrainer):
         images = next(self.train_dataloader)
         timesteps = self.noise_scheduler.sample_time_on_device(batch_size=images['images'].shape[0])
         real_noise = torch.randn_like(images['images'])
+        labels = images['labels']
+
+        if labels is not None:
+            num_classes = self.train_dataset.get_num_classes()
+            mask = np.random.choice(np.arange(2), replace=True, size=images.shape[0], p=[1 - self.uncond_prob, self.uncond_prob]).astype(bool)
+            labels[mask] = num_classes
+            labels = (labels[:, None] == torch.arange(num_classes + 1, device=labels.device)[None, :]).float()
 
         batch = {
             'x_0': images['images'],
             'eps': real_noise,
-            't': timesteps
+            't': timesteps,
+            'labels': labels
         }
         batch = move_batch_to_device(batch, self.device)
 
         self.optimizer.zero_grad()
 
         ddpm_out = self.noise_scheduler(batch)
-        pred_noise = self.unet(ddpm_out['x_t'], batch['t'] / self.noise_scheduler.T)
+        pred_noise = self.unet(ddpm_out['x_t'], batch['t'] / self.noise_scheduler.T, batch['labels'])
+
 
         batch_data = {"real_noise": ddpm_out['eps'],
                       "predicted_noise": pred_noise}

@@ -25,13 +25,27 @@ def is_image_file(filename):
 
 def make_dataset(dir):
     images = []
+    labels = []
+    name2idx = {}
+    cnt = 0
     assert os.path.isdir(dir), "%s is not a valid directory" % dir
     for root, _, fnames in sorted(os.walk(dir)):
         for fname in fnames:
             if is_image_file(fname):
                 path = os.path.join(root, fname)
                 images.append(path)
-    return images
+                
+                folder = path.split('/')[-2]
+                if folder in name2idx:
+                    label = name2idx[folder]
+                else:
+                    label = cnt
+                    name2idx[folder] = cnt
+                    cnt += 1
+                
+                labels.append(label)
+                
+    return images, labels
 
 
 def tensor2im(var):
