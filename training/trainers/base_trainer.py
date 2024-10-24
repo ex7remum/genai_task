@@ -6,7 +6,7 @@ from datasets.dataloaders import InfiniteLoader
 from training.loggers import TrainingLogger
 from datasets.datasets import datasets_registry
 from metrics.metrics import metrics_registry
-from utils.data_utils import preprocess_image
+from utils.data_utils import preprocess_image, tensor2im
 from PIL import Image
 
 
@@ -147,4 +147,29 @@ class BaseTrainer:
 
     @torch.no_grad()
     def inference(self):
-        self.validate()
+        self.to_eval()
+
+        num_images = 20 * 101
+        path = f'{self.experiment_dir}/images'
+        os.makedirs(path, mode=0o777, exist_ok=True)
+        all_labels = self.train_dataset.labels
+
+
+        for idx in range(0, num_images, self.config.data.val_batch_size):
+           num_img_to_gen = min(self.config.data.val_batch_size, num_images - idx)
+           cur_labels =  torch.tensor(all_labels[idx: idx + num_img_to_gen]).to(self.device)
+           gen_imgs = self.sample_image(num_img_to_gen, cur_labels)
+           for img_id, img in enumerate(gen_imgs):
+               cur_path = f'{path}/sample_{idx + img_id}.jpg'
+               cur_img = tensor2im(img)
+               cur_img = cur_img.save(cur_path)
+        
+
+        metrics_dict = {}
+        for metric in self.metrics:
+           metrics_dict[metric.get_name()] = metric(
+               orig_path=self.fid_dir, 
+               synt_path=path
+           )
+        self.logger.log_val_metrics(metrics_dict, step=self.step)
+        return metrics_dict

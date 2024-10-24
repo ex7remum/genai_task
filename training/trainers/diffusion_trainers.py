@@ -21,11 +21,20 @@ class BaseDiffusionTrainer(BaseTrainer):
         self.unet = diffusion_models_registry[self.config.train.model](self.config.model_args).to(self.device)
         self.noise_scheduler = noise_scheduler_registry[self.config.train.noise_scheduler](self.config.ddpm_args).to(self.device)
         self.uncond_prob = self.config.train.uncond_prob
+        if self.config.train.checkpoint_path:
+            checkpoint = torch.load(self.config.train.checkpoint_path, map_location=self.device)
+            self.start_step = checkpoint['step']
+            self.step = self.start_step
+            self.unet.load_state_dict(checkpoint['unet_state_dict'])
+            self.noise_scheduler.load_state_dict(checkpoint['ddpm_state_dict'])
 
 
     def setup_optimizers(self):
         # do not forget to load state from checkpoints if provided
         self.optimizer = optimizers_registry[self.config.train.optimizer](self.unet.parameters(), **self.config.optimizer_args)
+        if self.config.train.checkpoint_path:
+            checkpoint = torch.load(self.config.train.checkpoint_path, map_location=self.device)
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
 
     def setup_losses(self):
@@ -100,9 +109,7 @@ class BaseDiffusionTrainer(BaseTrainer):
             'unet_state_dict': self.unet.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             'ddpm_state_dict': self.noise_scheduler.state_dict(),
-            'loss_builder': self.loss_builder,
-            'config': self.config,
-            'logger':self.logger
+            'logger': self.logger
             }, f'{self.experiment_dir}/checkpoints/model_step_{self.step}.pt')
 
 

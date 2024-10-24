@@ -13,9 +13,15 @@ class WandbLogger:
     def __init__(self, config):
         wandb.login(key=os.environ['WANDB_KEY'].strip())
         if config.train.checkpoint_path:
-            # TO DO
             # resume training run from checkpoint
-            raise NotImplementedError()
+            checkpoint = torch.load(self.config.train.checkpoint_path, map_location=self.device)
+            old_logger = checkpoint['logger']
+            self.wandb_args = {
+                "id": old_logger.logger.wandb_args['id'],
+                "project": old_logger.logger.wandb_args['project'],
+                "name": old_logger.logger.wandb_args['name'],
+                "config": old_logger.logger.wandb_args['config'],
+            }
         else:
             # create new wandb run and save args, config and etc.
             self.wandb_args = {
@@ -32,6 +38,7 @@ class WandbLogger:
         # log values to wandb
         for key, value in values_dict.items():
             wandb.log({key : value}, step=step)
+
 
     @staticmethod
     def log_images(images: torch.Tensor, step: int):
