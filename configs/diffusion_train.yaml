@@ -2,7 +2,7 @@ exp:
     project_name: base_diffusion
     run_name: dhariwal_unet
     exp_dir: experiments
-    device: cuda
+    device: cuda:1
     seed: 54
     use_wandb: True
     model_type: diffusion
@@ -12,8 +12,8 @@ data:
     input_val_dir: test
     drop_last: true
     shuffle: true
-    train_batch_size: 128
-    val_batch_size: 512
+    train_batch_size: 64
+    val_batch_size: 128
     workers: 2
 
 train:
@@ -26,19 +26,19 @@ train:
     val_metrics: ["fid"]
     start_step: 0
     uncond_prob: 0.1
-    steps: 30000
+    steps: 70000
     log_step: 100
-    checkpoint_step: 1500
-    val_step: 1500
+    checkpoint_step: 2000
+    val_step: 2000
 
 
 model_args:
     img_resolution: 64
     in_channels: 3
     out_channels: 3
-    label_dim: 0
+    label_dim: 102
     augment_dim: 0
-    model_channels: 16
+    model_channels: 64
     channel_mult: [1,2,3,4]
     channel_mult_emb: 4
     num_blocks: 3

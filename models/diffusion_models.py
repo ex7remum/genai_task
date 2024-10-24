@@ -434,5 +434,5 @@ class PytorchUnet(nn.Module):
             self_condition=model_config['self_condition']
         )
         
-    def forward(self, x_t, t):
-        return self.net(x_t, t)
+    def forward(self, x_t, t, labels=None):
+        return self.net(x_t, t, labels)

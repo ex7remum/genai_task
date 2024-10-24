@@ -55,7 +55,7 @@ class BaseDiffusionTrainer(BaseTrainer):
 
         if labels is not None:
             num_classes = self.train_dataset.get_num_classes()
-            mask = np.random.choice(np.arange(2), replace=True, size=images.shape[0], p=[1 - self.uncond_prob, self.uncond_prob]).astype(bool)
+            mask = np.random.choice(np.arange(2), replace=True, size=real_noise.shape[0], p=[1 - self.uncond_prob, self.uncond_prob]).astype(bool)
             labels[mask] = num_classes
             labels = (labels[:, None] == torch.arange(num_classes + 1, device=labels.device)[None, :]).float()
 
