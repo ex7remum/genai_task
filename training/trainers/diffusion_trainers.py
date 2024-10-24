@@ -106,13 +106,19 @@ class BaseDiffusionTrainer(BaseTrainer):
             }, f'{self.experiment_dir}/checkpoints/model_step_{self.step}.pt')
 
 
-    def sample_image(self, batch_size):
+    def sample_image(self, batch_size, labels=None):
         shape = (batch_size, 3, 64, 64)
         x_t = torch.randn(shape).to(self.device)
 
+        
+        num_classes = self.train_dataset.get_num_classes()
+        if labels is None:
+            labels = torch.randint(0, num_classes, (batch_size,), device=self.device)
+        labels = (labels[:, None] == torch.arange(num_classes + 1, device=x_t.device)[None, :]).float()
+
         for t in range(self.noise_scheduler.T - 1, -1, -1):
             t_tensor = torch.ones(batch_size, dtype=torch.int64, device=x_t.device) * t
-            model_output = self.unet(x_t, t_tensor / self.noise_scheduler.T)
+            model_output = self.unet(x_t, t_tensor / self.noise_scheduler.T, labels)
             x_0 = self.noise_scheduler.get_x_zero(x_t, model_output, t_tensor)
             x_t = self.noise_scheduler.sample_from_posterior_q(x_t, x_0, t_tensor)
         return x_t
