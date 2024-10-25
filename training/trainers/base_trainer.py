@@ -8,6 +8,7 @@ from datasets.datasets import datasets_registry
 from metrics.metrics import metrics_registry
 from utils.data_utils import preprocess_image, tensor2im
 from PIL import Image
+import json
 
 
 class BaseTrainer:
@@ -107,7 +108,7 @@ class BaseTrainer:
             if self.step and self.step % self.config.train.val_step == 0:
                 val_metrics_dict, images = self.validate()
 
-                #self.logger.log_val_metrics(val_metrics_dict, step=self.step)
+                self.logger.log_val_metrics(val_metrics_dict, step=self.step)
                 self.logger.log_batch_of_images(images, step=self.step, images_type="validation")
 
             if self.step and self.step % self.config.train.log_step == 0:
@@ -132,11 +133,11 @@ class BaseTrainer:
         images_sample, images_pth = self.synthesize_images()
 
         metrics_dict = {}
-        #for metric in self.metrics:
-        #    metrics_dict[metric.get_name()] = metric(
-        #        orig_path=self.fid_dir, 
-        #        synt_path=images_pth
-        #    )
+        for metric in self.metrics:
+           metrics_dict[metric.get_name()] = metric(
+               orig_path=self.fid_dir, 
+               synt_path=images_pth
+           )
         return metrics_dict, images_sample
 
 
@@ -172,4 +173,6 @@ class BaseTrainer:
                synt_path=path
            )
         self.logger.log_val_metrics(metrics_dict, step=self.step)
-        return metrics_dict
+
+        with open("result_metrics.json", "w") as outfile: 
+            json.dump(metrics_dict, outfile)

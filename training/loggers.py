@@ -14,7 +14,7 @@ class WandbLogger:
         wandb.login(key=os.environ['WANDB_KEY'].strip())
         if config.train.checkpoint_path:
             # resume training run from checkpoint
-            checkpoint = torch.load(self.config.train.checkpoint_path, map_location=self.device)
+            checkpoint = torch.load(config.train.checkpoint_path, map_location=config.exp.device)
             old_logger = checkpoint['logger']
             self.wandb_args = {
                 "id": old_logger.logger.wandb_args['id'],

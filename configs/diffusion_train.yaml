@@ -25,6 +25,7 @@ train:
     checkpoint_path: null
     val_metrics: ["fid"]
     start_step: 0
+    gamma: 0.1
     uncond_prob: 0.1
     steps: 70000
     log_step: 100

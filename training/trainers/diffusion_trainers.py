@@ -126,6 +126,10 @@ class BaseDiffusionTrainer(BaseTrainer):
         for t in range(self.noise_scheduler.T - 1, -1, -1):
             t_tensor = torch.ones(batch_size, dtype=torch.int64, device=x_t.device) * t
             model_output = self.unet(x_t, t_tensor / self.noise_scheduler.T, labels)
+            if self.config.train.gamma != 0:
+                fake_labels = (torch.ones_like(labels) * num_classes).float()
+                uncond_gen = self.unet(x_t, t_tensor / self.noise_scheduler.T, fake_labels)
+                model_output = (1 + self.config.train.gamma) * model_output - self.config.train.gamma * uncond_gen
             x_0 = self.noise_scheduler.get_x_zero(x_t, model_output, t_tensor)
             x_t = self.noise_scheduler.sample_from_posterior_q(x_t, x_0, t_tensor)
         return x_t
@@ -140,13 +144,13 @@ class BaseDiffusionTrainer(BaseTrainer):
         os.makedirs(path, mode=0o777, exist_ok=True)
 
 
-        #for idx in range(0, num_images, self.config.data.val_batch_size):
-        #    num_img_to_gen = min(self.config.data.val_batch_size, num_images - idx)
-        #    gen_imgs = self.sample_image(num_img_to_gen)
-        #    for img_id, img in enumerate(gen_imgs):
-        #        cur_path = f'{path}/sample_{idx + img_id}.jpg'
-        #        cur_img = tensor2im(img)
-        #        cur_img = cur_img.save(cur_path)
+        for idx in range(0, num_images, self.config.data.val_batch_size):
+           num_img_to_gen = min(self.config.data.val_batch_size, num_images - idx)
+           gen_imgs = self.sample_image(num_img_to_gen)
+           for img_id, img in enumerate(gen_imgs):
+               cur_path = f'{path}/sample_{idx + img_id}.jpg'
+               cur_img = tensor2im(img)
+               cur_img = cur_img.save(cur_path)
 
         visualize_img = self.sample_image(16)
         return visualize_img, path
