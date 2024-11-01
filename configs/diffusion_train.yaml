@@ -25,12 +25,12 @@ train:
     checkpoint_path: null
     val_metrics: ["fid"]
     start_step: 0
-    gamma: 0.1
+    gamma: 1
     uncond_prob: 0.1
     steps: 70000
-    log_step: 100
-    checkpoint_step: 2000
-    val_step: 2000
+    log_step: 1000
+    checkpoint_step: 25000
+    val_step: 25000
 
 
 model_args:
@@ -39,7 +39,7 @@ model_args:
     out_channels: 3
     label_dim: 102
     augment_dim: 0
-    model_channels: 64
+    model_channels: 128
     channel_mult: [1,2,3,4]
     channel_mult_emb: 4
     num_blocks: 3

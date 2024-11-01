@@ -153,12 +153,14 @@ class BaseTrainer:
         num_images = 20 * 101
         path = f'{self.experiment_dir}/images'
         os.makedirs(path, mode=0o777, exist_ok=True)
-        all_labels = self.train_dataset.labels
+        all_labels = torch.ones(num_images)
+        for i in range(101):
+            all_labels[i * 20: (i + 1) * 20] = i
 
 
         for idx in range(0, num_images, self.config.data.val_batch_size):
            num_img_to_gen = min(self.config.data.val_batch_size, num_images - idx)
-           cur_labels =  torch.tensor(all_labels[idx: idx + num_img_to_gen]).to(self.device)
+           cur_labels =  (all_labels[idx: idx + num_img_to_gen]).to(self.device)
            gen_imgs = self.sample_image(num_img_to_gen, cur_labels)
            for img_id, img in enumerate(gen_imgs):
                cur_path = f'{path}/sample_{idx + img_id}.jpg'
